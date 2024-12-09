@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول باستخدام جوجل - Firebase</title>
+    <script type="module">
+        // Import Firebase SDKs
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-firestore.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyB0Aj452H6Gp1ociH4ufHrLiU6Uucb-ysM",
+            authDomain: "who-is-the-spy-51308.firebaseapp.com",
+            databaseURL: "https://who-is-the-spy-51308-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "who-is-the-spy-51308",
+            storageBucket: "who-is-the-spy-51308.firebasestorage.app",
+            messagingSenderId: "900253646275",
+            appId: "1:900253646275:web:b9f7a3cbb1069a07d2d176",
+            measurementId: "G-NWXDDDRPRH"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Google Sign-In provider
+        const provider = new GoogleAuthProvider();
+
+        // دالة لتسجيل الدخول باستخدام جوجل
+        async function signInWithGoogle() {
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+
+                // حفظ بيانات المستخدم في Firestore
+                await setDoc(doc(db, "users", user.uid), {
+                    displayName: user.displayName,
+                    email: user.email,
+                    photoURL: user.photoURL
+                });
+
+                // عرض رسالة للمستخدم بعد تسجيل الدخول
+                console.log("تم تسجيل الدخول بنجاح:", user.displayName);
+                alert("تم تسجيل الدخول بنجاح!");
+            } catch (error) {
+                console.error("حدث خطأ أثناء تسجيل الدخول:", error.message);
+                alert("فشل تسجيل الدخول!");
+            }
+        }
+
+        // تسجيل الخروج
+        function signOutUser() {
+            signOut(auth).then(() => {
+                alert("تم تسجيل الخروج!");
+            }).catch((error) => {
+                console.error("حدث خطأ أثناء تسجيل الخروج:", error.message);
+            });
+        }
+
+        // التحقق من حالة المستخدم
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                console.log("المستخدم مسجل دخول:", user.displayName);
+                document.getElementById("signInBtn").style.display = "none"; // إخفاء زر التسجيل
+                document.getElementById("signOutBtn").style.display = "block"; // عرض زر الخروج
+            } else {
+                console.log("المستخدم غير مسجل دخول");
+                document.getElementById("signInBtn").style.display = "block"; // عرض زر التسجيل
+                document.getElementById("signOutBtn").style.display = "none"; // إخفاء زر الخروج
+            }
+        });
+
+        // إضافة حدث الـ DOMContentLoaded للتأكد من تحميل الصفحة بالكامل
+        document.addEventListener("DOMContentLoaded", function() {
+            const signInBtn = document.getElementById("signInBtn");
+            const signOutBtn = document.getElementById("signOutBtn");
+
+            // التأكد من أن الأزرار متاحة بعد تحميل الصفحة
+            signInBtn.addEventListener("click", signInWithGoogle);
+            signOutBtn.addEventListener("click", signOutUser);
+        });
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            text-align: center;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .btn {
+            background-color: #4285F4;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>تسجيل الدخول باستخدام جوجل</h2>
+    <!-- زر تسجيل الدخول باستخدام جوجل -->
+    <button class="btn" id="signInBtn">تسجيل الدخول باستخدام جوجل</button>
+    <button class="btn" id="signOutBtn" style="display:none;">تسجيل الخروج</button>
+</div>
+
+</body>
+</html>
